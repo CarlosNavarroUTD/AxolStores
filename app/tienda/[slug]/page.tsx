@@ -9,38 +9,50 @@ import { StoreFooter } from "@/components/store/store-footer"
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
 
 async function getTeam(slug: string) {
+  const url = `${API_BASE_URL}/teams/public/?slug=${slug}`
+  console.log('🔍 Fetching team:', url)
+  
   try {
-    const res = await fetch(`${API_BASE_URL}/teams/?slug=${slug}`, {
+    const res = await fetch(url, {
       next: { revalidate: 60 },
     })
+        
     if (!res.ok) return null
     const data = await res.json()
-    return data.results?.[0] || data[0] || null
-  } catch {
+        
+    return Array.isArray(data) ? data[0] : data
+  } catch (error) {
+    console.error('❌ Error fetching team:', error)
     return null
   }
 }
 
 async function getProducts(teamSlug: string) {
   try {
-    const res = await fetch(`${API_BASE_URL}/productos/public/?team_slug=${teamSlug}`, {
+    const res = await fetch(`${API_BASE_URL}/productos/publico/${teamSlug}/`, {
       next: { revalidate: 60 },
     })
     if (!res.ok) return []
-    return res.json()
-  } catch {
+    const data = await res.json()
+    // La API devuelve: {team_slug, total, productos: [...]}
+    return data.productos || []
+  } catch (error) {
+    console.error('❌ Error fetching products:', error)
     return []
   }
 }
 
 async function getServices(teamSlug: string) {
   try {
-    const res = await fetch(`${API_BASE_URL}/servicios/public/?team_slug=${teamSlug}`, {
+    const res = await fetch(`${API_BASE_URL}/servicios/publico/${teamSlug}/`, {
       next: { revalidate: 60 },
     })
     if (!res.ok) return []
-    return res.json()
-  } catch {
+    const data = await res.json()
+    // La API devuelve: {team_slug, total, servicios: [...]}
+    return data.servicios || []
+  } catch (error) {
+    console.error('❌ Error fetching services:', error)
     return []
   }
 }
@@ -51,13 +63,22 @@ interface PageProps {
 
 export default async function StorePage({ params }: PageProps) {
   const { slug } = await params
+  
+  console.log('🏪 Store page slug:', slug)
+  
   const team = await getTeam(slug)
 
   if (!team) {
     notFound()
   }
 
-  const [products, services] = await Promise.all([getProducts(slug), getServices(slug)])
+  const [products, services] = await Promise.all([
+    getProducts(slug),
+    getServices(slug),
+  ])
+
+  console.log('📦 Products loaded:', products.length)
+  console.log('🛠️ Services loaded:', services.length)
 
   return (
     <div className="min-h-screen bg-background">
@@ -67,9 +88,13 @@ export default async function StorePage({ params }: PageProps) {
         {/* Hero */}
         <section className="bg-muted/30 py-16 md:py-24">
           <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl font-bold tracking-tight md:text-5xl text-balance">{team.name}</h1>
+            <h1 className="text-4xl font-bold tracking-tight md:text-5xl text-balance">
+              {team.name}
+            </h1>
             {team.description && (
-              <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground text-pretty">{team.description}</p>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground text-pretty">
+                {team.description}
+              </p>
             )}
           </div>
         </section>
@@ -102,9 +127,7 @@ export async function generateMetadata({ params }: PageProps) {
   const team = await getTeam(slug)
 
   if (!team) {
-    return {
-      title: "Tienda no encontrada",
-    }
+    return { title: "Tienda no encontrada" }
   }
 
   return {

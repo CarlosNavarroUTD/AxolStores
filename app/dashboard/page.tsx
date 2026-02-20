@@ -1,20 +1,74 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { useTeam } from "@/contexts/team-context"
 import { Header } from "@/components/dashboard/header"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Package, Wrench, Users, ClipboardList, TrendingUp, DollarSign } from "lucide-react"
 import Link from "next/link"
 
-const stats = [
-  { name: "Productos", value: "24", icon: Package, href: "/dashboard/productos", change: "+12%" },
-  { name: "Servicios", value: "8", icon: Wrench, href: "/dashboard/servicios", change: "+4%" },
-  { name: "Leads", value: "156", icon: Users, href: "/dashboard/leads", change: "+23%" },
-  { name: "Tareas", value: "12", icon: ClipboardList, href: "/dashboard/tareas", change: "-2%" },
-]
+interface DashboardStats {
+  productos: number
+  servicios: number
+  leads: number
+  tareas: number
+}
 
 export default function DashboardPage() {
   const { activeTeam, isLoading } = useTeam()
+  const [stats, setStats] = useState<DashboardStats>({
+    productos: 0,
+    servicios: 0,
+    leads: 0,
+    tareas: 0,
+  })
+  const [loadingStats, setLoadingStats] = useState(true)
+
+  useEffect(() => {
+    async function fetchStats() {
+      if (!activeTeam?.slug) return
+
+      setLoadingStats(true)
+      try {
+        const token = localStorage.getItem("token")
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        }
+        if (token) {
+          headers["Authorization"] = `Token ${token}`
+        }
+
+        // Fetch productos y servicios en paralelo usando endpoints públicos
+        const [productosRes, serviciosRes] = await Promise.all([
+          fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/productos/publico/${activeTeam.slug}/`,
+            { headers }
+          ),
+          fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/servicios/publico/${activeTeam.slug}/`,
+            { headers }
+          ),
+        ])
+
+        // Los endpoints públicos devuelven: {team_slug, total, productos: [...]}
+        const productosData = productosRes.ok ? await productosRes.json() : null
+        const serviciosData = serviciosRes.ok ? await serviciosRes.json() : null
+
+        setStats({
+          productos: productosData?.productos?.length || 0,
+          servicios: serviciosData?.servicios?.length || 0,
+          leads: 0, // Por ahora mantener en 0 hasta tener el endpoint
+          tareas: 0, // Por ahora mantener en 0 hasta tener el endpoint
+        })
+      } catch (error) {
+        console.error("Error fetching stats:", error)
+      } finally {
+        setLoadingStats(false)
+      }
+    }
+
+    fetchStats()
+  }, [activeTeam?.slug])
 
   if (isLoading) {
     return (
@@ -37,6 +91,33 @@ export default function DashboardPage() {
     )
   }
 
+  const statsCards = [
+    {
+      name: "Productos",
+      value: loadingStats ? "..." : stats.productos.toString(),
+      icon: Package,
+      href: "/dashboard/productos",
+    },
+    {
+      name: "Servicios",
+      value: loadingStats ? "..." : stats.servicios.toString(),
+      icon: Wrench,
+      href: "/dashboard/servicios",
+    },
+    {
+      name: "Leads",
+      value: loadingStats ? "..." : stats.leads.toString(),
+      icon: Users,
+      href: "/dashboard/leads",
+    },
+    {
+      name: "Tareas",
+      value: loadingStats ? "..." : stats.tareas.toString(),
+      icon: ClipboardList,
+      href: "/dashboard/tareas",
+    },
+  ]
+
   return (
     <div className="flex flex-col">
       <Header title="Dashboard" />
@@ -44,19 +125,23 @@ export default function DashboardPage() {
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Estadísticas */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => (
+          {statsCards.map((stat) => (
             <Link key={stat.name} href={stat.href}>
               <Card className="hover:shadow-md transition-shadow cursor-pointer">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">{stat.name}</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {stat.name}
+                  </CardTitle>
                   <stat.icon className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stat.value}</div>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                    <TrendingUp className="h-3 w-3" />
-                    {stat.change} desde el mes pasado
-                  </p>
+                  {!loadingStats && parseInt(stat.value) > 0 && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                      <TrendingUp className="h-3 w-3" />
+                      Activos en tu tienda
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </Link>
@@ -119,7 +204,13 @@ export default function DashboardPage() {
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">URL pública</p>
-                <p className="text-lg text-primary">/tienda/{activeTeam.slug}</p>
+                <Link
+                  href={`/tienda/${activeTeam.slug}`}
+                  target="_blank"
+                  className="text-lg text-primary hover:underline"
+                >
+                  /tienda/{activeTeam.slug}
+                </Link>
               </div>
             </div>
             {activeTeam.description && (
