@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { authApi } from "@/lib/api"
@@ -20,6 +19,7 @@ export default function RegisterPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    tipo_usuario: "usuario",
   })
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -40,10 +40,16 @@ export default function RegisterPage() {
         nombre_usuario: formData.nombre_usuario,
         email: formData.email,
         password: formData.password,
+        tipo_usuario: formData.tipo_usuario, // ← ahora TypeScript lo acepta
       })
       router.push("/login?registered=true")
-    } catch {
-      setError("Error al registrar. El email puede estar en uso.")
+    } catch (err: unknown) {
+      // Manejo granular del error según respuesta del backend
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError("Error al registrar. El email puede estar en uso.")
+      }
     } finally {
       setIsLoading(false)
     }

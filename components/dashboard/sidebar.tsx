@@ -21,6 +21,7 @@ import {
   LogOut,
   ExternalLink,
   Store,
+  NotebookPen,
 } from "lucide-react"
 
 const navigation = [
@@ -30,6 +31,7 @@ const navigation = [
   { name: "Leads", href: "/dashboard/leads", icon: Users },
   { name: "Tareas", href: "/dashboard/tareas", icon: ClipboardList },
   { name: "Archivos", href: "/dashboard/archivos", icon: FileText },
+  { name: "Notas", href: "/dashboard/notas", icon: NotebookPen },
 ]
 
 const bottomNavigation = [

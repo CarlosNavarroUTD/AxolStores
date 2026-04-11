@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Sparkles } from "lucide-react"
+import Image from "next/image"
 
 export function Hero() {
   return (
@@ -13,16 +14,20 @@ export function Hero() {
       <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-20 sm:pb-32 sm:pt-28">
         {/* Badge */}
         <div className="flex justify-center animate-fade-up">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>Plataforma todo-en-uno para tu negocio</span>
+          <div className="relative w-40 h-40 sm:w-48 sm:h-48">
+            <Image
+              src="/logo.png"
+              alt="AxolStores logo"
+              fill
+              className="object-contain"
+            />
           </div>
         </div>
 
         {/* Heading */}
         <h1 className="mx-auto mt-8 max-w-4xl text-center font-display text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-6xl lg:text-7xl animate-fade-up-delay-1">
           <span className="text-balance">
-            Vende mas.{" "}
+            Vende más.{" "}
             <span className="text-primary">Automatiza</span> tu negocio.
           </span>
         </h1>
