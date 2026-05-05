@@ -1,13 +1,12 @@
-// /lib/api/index.ts
-
 export { authApi } from "./auth"
 export { teamsApi } from "./teams"
 export { productsApi } from "./products"
 export { servicesApi } from "./services"
 export { leadsApi } from "./leads"
 export { tasksApi } from "./tasks"
-export { archivosApi, accesosApi } from "./archivos"
+export { uploadFileToR2 } from "./archivos"
 export { notasApi } from "./notas"
+export * from './archivos'
 
 // Re-exporta tipos
 export type {
@@ -18,8 +17,6 @@ export type {
   ArchivoUploadData,
   ArchivoUpdateData,
   BuscarArchivosParams,
-  Archivo,
-  AccesoArchivo,
   NotaData,
   Nota,
   BuscarNotasParams,

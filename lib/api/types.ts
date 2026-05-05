@@ -57,31 +57,6 @@ export interface ProductData {
     team_id?: number
   }
   
-  export interface Archivo {
-    id: string
-    team: number
-    nombre: string
-    descripcion: string
-    archivo: string
-    tipo_archivo: string
-    tamano: number
-    hash_sha256: string
-    subido_por: number
-    activo: boolean
-    fecha_creacion: string
-    fecha_modificacion: string
-  }
-  
-  export interface AccesoArchivo {
-    id: string
-    archivo: string
-    usuario: number
-    tipo_acceso: "visualizacion" | "descarga" | "modificacion" | "eliminacion"
-    fecha_acceso: string
-    ip_address: string
-    user_agent: string
-  }
-  
   export interface NotaData {
     team: number
     titulo: string
