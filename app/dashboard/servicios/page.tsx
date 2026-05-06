@@ -14,7 +14,7 @@ interface Service {
   id: number
   nombre: string
   descripcion?: string
-  precio: number
+  precio?: number | null
   duracion?: number
   activo: boolean
   team: number
