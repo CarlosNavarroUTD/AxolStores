@@ -7,8 +7,11 @@ export const authApi = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     })
-    if (!response.ok) throw new Error("Credenciales inválidas")
-    return response.json()
+    const result = await response.json()
+    if (!response.ok) {
+      throw new Error(result.detail || "Credenciales inválidas")
+    }
+    return result
   },
 
   register: async (data: {
@@ -22,9 +25,41 @@ export const authApi = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     })
-    if (!response.ok) throw new Error("Error al registrar")
+    
+    const result = await response.json()
+    if (!response.ok) throw new Error(result.detail || "Error al registrar")
+    return result
+  },
+
+  verifyEmail: async (key: string) => {
+    const response = await fetch(`${API_BASE_URL}/auth/registration/verify-email/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key }),
+    })
+    if (!response.ok) throw new Error("Error al verificar el correo electrónico.")
+    return response.json()
+  },
+
+
+  googleLogin: async (code: string) => {
+    const response = await fetch(`${API_BASE_URL}/auth/google/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    })
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}))
+      const message =
+        err.detail ||
+        err.non_field_errors?.[0] ||
+        (typeof err === "object" ? JSON.stringify(err) : "Error al autenticar con Google")
+      console.error("Google login error:", err)
+      throw new Error(message)
+    }
     return response.json()
   },
 
   me: () => fetchWithAuth("/users/me/"),
+
 }

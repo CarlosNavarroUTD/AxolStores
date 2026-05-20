@@ -22,6 +22,8 @@ import {
   ExternalLink,
   Store,
   NotebookPen,
+  MessageSquare,
+  Database,
 } from "lucide-react"
 
 const navigation = [
@@ -32,11 +34,13 @@ const navigation = [
   { name: "Tareas", href: "/dashboard/tareas", icon: ClipboardList },
   { name: "Archivos", href: "/dashboard/archivos", icon: FileText },
   { name: "Notas", href: "/dashboard/notas", icon: NotebookPen },
+  { name: "WhatsApp", href: "/dashboard/whatsapp", icon: MessageSquare },
 ]
 
 const bottomNavigation = [
   { name: "Mi equipo", href: "/dashboard/equipo", icon: UserCircle },
   { name: "Configuración", href: "/dashboard/configuracion", icon: Settings },
+  { name: "Migraciones", href: "/dashboard/migraciones", icon: Database },
 ]
 
 export function Sidebar() {

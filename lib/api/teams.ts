@@ -24,4 +24,10 @@ export const teamsApi = {
 
   inviteMember: (teamId: number, data: { email?: string; phone?: string }) =>
     fetchWithAuth(`/teams/${teamId}/invite_member/`, { method: "POST", body: JSON.stringify(data) }),
+
+  getMyInvitations: () => fetchWithAuth("/invitations/my_invitations/"),
+
+  acceptInvitation: (id: number) => fetchWithAuth(`/invitations/${id}/accept/`, { method: "POST" }),
+
+  rejectInvitation: (id: number) => fetchWithAuth(`/invitations/${id}/reject/`, { method: "POST" }),
 }

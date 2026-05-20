@@ -25,7 +25,7 @@ export default function ServiciosPage() {
   const router = useRouter()
   const { activeTeam } = useTeam()
 
-  const { data: services = [], isLoading } = useSWR(
+  const { data: services = [], isLoading, mutate } = useSWR(
     activeTeam ? `services-${activeTeam.id}` : null,
     () => (activeTeam ? servicesApi.getAll(activeTeam.id) : []),
   )
@@ -56,6 +56,8 @@ export default function ServiciosPage() {
       key: "precio",
       header: "Precio",
       cell: (service) => `$${(service.precio ?? 0).toLocaleString()}`,
+      editable: true,
+      editType: "number",
     },
     {
       key: "duracion",
@@ -67,6 +69,8 @@ export default function ServiciosPage() {
         const m = service.duracion % 60
         return m === 0 ? `${h}h` : `${h}h ${m}min`
       },
+      editable: true,
+      editType: "number",
     },
     {
       key: "activo",
@@ -76,6 +80,8 @@ export default function ServiciosPage() {
           {service.activo ? "Activo" : "Inactivo"}
         </Badge>
       ),
+      editable: true,
+      editType: "boolean",
     },
     // Columnas dinámicas para campos personalizados
     ...getPersonalizadosColumns(services),
@@ -90,6 +96,35 @@ export default function ServiciosPage() {
         </div>
       </div>
     )
+  }
+
+  const handleInlineEdit = async (item: Service, key: string, value: any) => {
+    if (!activeTeam) return
+
+    let finalValue: any = value
+    if (key === "precio" || key === "duracion") {
+      finalValue = Number.parseFloat(String(value).replace(/[^0-9.-]+/g, ""))
+      if (isNaN(finalValue)) return
+    }
+
+    try {
+      // Si la key es personalizada (ej: "personalizados.color"),
+      // deberíamos parsearlo, pero por simplicidad de momento lo 
+      // actualizaremos si está en el root.
+      // Ojo: si es key "personalizados.loquesea" habría que mutar personalizados.
+      if (key.startsWith("personalizados.")) {
+        const pKey = key.split(".")[1]
+        const pData = { ...(item.personalizados || {}) }
+        pData[pKey] = finalValue
+        await servicesApi.update(item.id, { personalizados: pData } as any)
+      } else {
+        await servicesApi.update(item.id, { [key]: finalValue } as any)
+      }
+      await mutate()
+    } catch (error) {
+      console.error("Error actualizando servicio:", error)
+      alert("Error al guardar el cambio")
+    }
   }
 
   return (
@@ -117,6 +152,8 @@ export default function ServiciosPage() {
             columns={columns}
             onEdit={(service) => router.push(`/dashboard/servicios/${service.id}`)}
             onDelete={(service) => router.push(`/dashboard/servicios/${service.id}?delete=1`)}
+            onInlineEdit={handleInlineEdit}
+            storageKey="servicios"
             searchKey="nombre"
             searchPlaceholder="Buscar servicios..."
           />

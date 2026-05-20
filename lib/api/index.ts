@@ -6,6 +6,8 @@ export { leadsApi } from "./leads"
 export { tasksApi } from "./tasks"
 export { uploadFileToR2 } from "./archivos"
 export { notasApi } from "./notas"
+export { whatsappApi } from "./whatsapp"
+export { googlesheetsApi } from "./googlesheets"
 export * from './archivos'
 
 // Re-exporta tipos

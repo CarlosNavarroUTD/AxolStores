@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import useSWR from "swr"
 import { productsApi } from "@/lib/api"
@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,6 +49,95 @@ interface Product {
   team: number
   created_at?: string
   updated_at?: string
+}
+
+function InlineEditable({
+  value,
+  onSave,
+  type = "text",
+  className = "",
+  placeholder = "Clic para editar"
+}: {
+  value: string | number
+  onSave: (val: string) => Promise<void>
+  type?: "text" | "number" | "textarea"
+  className?: string
+  placeholder?: string
+}) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [currentValue, setCurrentValue] = useState(value ?? "")
+  const [isSaving, setIsSaving] = useState(false)
+
+  useEffect(() => {
+    setCurrentValue(value ?? "")
+  }, [value])
+
+  const handleBlur = async () => {
+    if (String(currentValue) !== String(value ?? "")) {
+      setIsSaving(true)
+      try {
+        await onSave(String(currentValue))
+      } finally {
+        setIsSaving(false)
+        setIsEditing(false)
+      }
+    } else {
+      setIsEditing(false)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && type !== "textarea") {
+      handleBlur()
+    }
+    if (e.key === "Escape") {
+      setCurrentValue(value ?? "")
+      setIsEditing(false)
+    }
+  }
+
+  if (isEditing) {
+    if (type === "textarea") {
+      return (
+        <Textarea
+          autoFocus
+          value={currentValue}
+          onChange={(e) => setCurrentValue(e.target.value)}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          disabled={isSaving}
+          className={cn("w-full resize-none", className)}
+          rows={4}
+        />
+      )
+    }
+    return (
+      <Input
+        autoFocus
+        type={type === "number" ? "text" : type}
+        value={currentValue}
+        onChange={(e) => setCurrentValue(e.target.value)}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        disabled={isSaving}
+        className={cn("h-8 py-1", className)}
+      />
+    )
+  }
+
+  return (
+    <div
+      onClick={() => setIsEditing(true)}
+      className={cn(
+        "cursor-text hover:bg-muted/50 rounded -mx-2 px-2 py-1 transition-colors min-h-[1.5rem] break-words whitespace-pre-wrap",
+        !value && "text-muted-foreground italic",
+        className
+      )}
+      title="Clic para editar"
+    >
+      {value || placeholder}
+    </div>
+  )
 }
 
 export default function ProductDetailPage() {
@@ -89,6 +180,27 @@ export default function ProductDetailPage() {
       alert("Error al eliminar el producto")
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  const handleInlineSave = async (key: string, value: string) => {
+    if (!product) return
+
+    let finalValue: any = value
+    if (key === "precio") {
+      finalValue = Number.parseFloat(value.replace(/[^0-9.-]+/g, ""))
+      if (isNaN(finalValue)) return
+    } else if (key === "stock") {
+      finalValue = Number.parseInt(value)
+      if (isNaN(finalValue)) return
+    }
+
+    try {
+      await productsApi.update(product.id, { [key]: finalValue })
+      await mutate()
+    } catch (error) {
+      console.error("Error actualizando producto:", error)
+      alert("Error al guardar el cambio")
     }
   }
 
@@ -262,8 +374,14 @@ export default function ProductDetailPage() {
             <Card>
               <CardHeader>
                 <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-2xl">{product.nombre}</CardTitle>
+                  <div className="flex-1 mr-4">
+                    <CardTitle className="text-2xl">
+                      <InlineEditable 
+                        value={product.nombre} 
+                        onSave={(val) => handleInlineSave("nombre", val)} 
+                        className="text-2xl font-bold p-0 min-h-0 h-auto leading-none bg-transparent -ml-2 px-2 py-1" 
+                      />
+                    </CardTitle>
                     <CardDescription className="mt-1">ID: #{product.id}</CardDescription>
                   </div>
                   <Badge variant={product.activo ? "default" : "secondary"}>
@@ -275,46 +393,66 @@ export default function ProductDetailPage() {
                 {/* Precio y stock */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
-                    <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                    <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
                       <DollarSign className="h-5 w-5 text-green-600" />
                     </div>
-                    <div>
+                    <div className="flex-1 overflow-hidden">
                       <p className="text-sm text-muted-foreground">Precio</p>
-                      <p className="text-xl font-bold">${product.precio.toLocaleString()}</p>
+                      <div className="text-xl font-bold">
+                        <InlineEditable 
+                          value={`$${product.precio.toLocaleString()}`} 
+                          onSave={(val) => handleInlineSave("precio", val)} 
+                          className="text-xl font-bold p-0 min-h-0 h-auto leading-none bg-transparent -ml-2 px-2 py-1 w-full" 
+                        />
+                      </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
-                    <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                    <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
                       <Boxes className="h-5 w-5 text-blue-600" />
                     </div>
-                    <div>
+                    <div className="flex-1 overflow-hidden">
                       <p className="text-sm text-muted-foreground">Stock</p>
-                      <p className="text-xl font-bold">{product.stock ?? "N/A"}</p>
+                      <div className="text-xl font-bold">
+                        <InlineEditable 
+                          value={product.stock ?? ""} 
+                          placeholder="N/A" 
+                          onSave={(val) => handleInlineSave("stock", val)} 
+                          className="text-xl font-bold p-0 min-h-0 h-auto leading-none bg-transparent -ml-2 px-2 py-1 w-full" 
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {product.categoria && (
-                  <>
-                    <Separator />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Categoría</p>
-                      <p className="font-medium">{product.categoria}</p>
-                    </div>
-                  </>
-                )}
+                <Separator />
+                <div>
+                  <p className="text-sm text-muted-foreground">Categoría</p>
+                  <div className="font-medium">
+                    <InlineEditable 
+                      value={product.categoria || ""} 
+                      placeholder="Sin categoría" 
+                      onSave={(val) => handleInlineSave("categoria", val)} 
+                      className="font-medium p-0 min-h-0 h-auto leading-none bg-transparent -ml-2 px-2 py-1 w-full max-w-sm" 
+                    />
+                  </div>
+                </div>
 
                 <Separator />
 
                 {/* Descripción */}
                 <div>
                   <h3 className="font-medium mb-2">Descripción</h3>
-                  {product.descripcion ? (
-                    <p className="text-muted-foreground whitespace-pre-wrap">{product.descripcion}</p>
-                  ) : (
-                    <p className="text-muted-foreground italic">Sin descripción</p>
-                  )}
+                  <div className="text-muted-foreground whitespace-pre-wrap">
+                    <InlineEditable 
+                      type="textarea" 
+                      value={product.descripcion || ""} 
+                      placeholder="Sin descripción" 
+                      onSave={(val) => handleInlineSave("descripcion", val)} 
+                      className="bg-transparent -ml-2 px-2 py-1 w-full" 
+                    />
+                  </div>
                 </div>
 
                 <Separator />

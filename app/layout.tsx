@@ -1,8 +1,6 @@
 import type { Metadata } from "next"
 import "./globals.css"
 import { ThemeProvider } from "@/contexts/theme-provider"
-import { Header } from "@/components/inicio/header"
-import { Footer } from "@/components/inicio/footer"
 
 export const metadata: Metadata = {
   title: "AxolStores — Plataforma todo-en-uno para tu negocio",
@@ -19,9 +17,7 @@ export default function RootLayout({
     <html lang="es" className="dark" suppressHydrationWarning>
       <body>
         <ThemeProvider>
-          <Header />
           {children}
-          <Footer />
         </ThemeProvider>
       </body>
     </html>

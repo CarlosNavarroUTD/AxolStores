@@ -22,6 +22,7 @@ interface AuthContextType {
   isLoading: boolean
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
+  googleLogin: (accessToken: string) => Promise<void>
   logout: () => void
   refreshUser: () => Promise<void>
 }
@@ -65,6 +66,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/dashboard")
   }
 
+  const googleLogin = async (accessToken: string) => {
+    const { access, refresh } = await authApi.googleLogin(accessToken)
+    localStorage.setItem("access_token", access)
+    localStorage.setItem("refresh_token", refresh)
+    await refreshUser()
+    router.push("/dashboard")
+  }
+
   const logout = () => {
     localStorage.removeItem("access_token")
     localStorage.removeItem("refresh_token")
@@ -80,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAuthenticated: !!user,
         login,
+        googleLogin,
         logout,
         refreshUser,
       }}

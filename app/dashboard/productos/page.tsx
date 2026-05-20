@@ -117,16 +117,22 @@ export default function ProductosPage() {
       key: "precio",
       header: "Precio",
       cell: (product) => `$${product.precio.toLocaleString()}`,
+      editable: true,
+      editType: "number",
     },
     {
       key: "stock",
       header: "Stock",
       cell: (product) => product.stock ?? "N/A",
+      editable: true,
+      editType: "number",
     },
     {
       key: "categoria",
       header: "Categoría",
       cell: (product) => product.categoria || "Sin categoría",
+      editable: true,
+      editType: "text",
     },
     {
       key: "activo",
@@ -136,6 +142,8 @@ export default function ProductosPage() {
           {product.activo ? "Activo" : "Inactivo"}
         </Badge>
       ),
+      editable: true,
+      editType: "boolean",
     },
     {
       key: "acciones",
@@ -229,6 +237,27 @@ export default function ProductosPage() {
     setIsDeleteDialogOpen(true)
   }
 
+  const handleInlineEdit = async (item: Product, key: string, value: any) => {
+    if (!activeTeam) return
+
+    let finalValue: any = value
+    if (key === "precio") {
+      finalValue = Number.parseFloat(String(value).replace(/[^0-9.-]+/g, ""))
+      if (isNaN(finalValue)) return
+    } else if (key === "stock") {
+      finalValue = Number.parseInt(String(value))
+      if (isNaN(finalValue)) return
+    }
+
+    try {
+      await productsApi.update(item.id, { [key]: finalValue })
+      await mutate()
+    } catch (error) {
+      console.error("Error actualizando producto:", error)
+      alert("Error al guardar el cambio")
+    }
+  }
+
   if (!activeTeam) {
     return (
       <div className="flex h-full flex-col">
@@ -266,8 +295,10 @@ export default function ProductosPage() {
             columns={columns}
             onEdit={handleOpenDialog}
             onDelete={openDeleteDialog}
+            onInlineEdit={handleInlineEdit}
             searchKey="nombre"
             searchPlaceholder="Buscar productos..."
+            storageKey="productos"
           />
         )}
       </div>

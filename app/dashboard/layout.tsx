@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { AuthProvider, useAuth } from "@/contexts/auth-context"
 import { TeamProvider } from "@/contexts/team-context"
 import { Sidebar } from "@/components/dashboard/sidebar"
+import { Header } from "@/components/dashboard/header"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
@@ -48,7 +49,12 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         </Sheet>
 
         {/* Contenido principal */}
-        <main className="flex-1 overflow-auto">{children}</main>
+        <main className="flex-1 flex flex-col h-screen overflow-hidden">
+          <Header onMenuClick={() => setSidebarOpen(true)} />
+          <div className="flex-1 overflow-auto">
+            {children}
+          </div>
+        </main>
       </div>
     </TeamProvider>
   )
