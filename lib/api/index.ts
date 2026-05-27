@@ -8,6 +8,7 @@ export { uploadFileToR2 } from "./archivos"
 export { notasApi } from "./notas"
 export { whatsappApi } from "./whatsapp"
 export { googlesheetsApi } from "./googlesheets"
+export { campaignsApi } from "./campaigns"
 export * from './archivos'
 
 // Re-exporta tipos
@@ -23,3 +24,9 @@ export type {
   Nota,
   BuscarNotasParams,
 } from "./types"
+export type {
+  Plantilla,
+  Campana,
+  CampanaCreateData,
+  PlantillaData,
+} from "./campaigns"

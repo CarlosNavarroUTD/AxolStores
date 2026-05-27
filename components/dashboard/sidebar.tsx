@@ -24,6 +24,7 @@ import {
   NotebookPen,
   MessageSquare,
   Database,
+  Megaphone,
 } from "lucide-react"
 
 const navigation = [
@@ -35,6 +36,7 @@ const navigation = [
   { name: "Archivos", href: "/dashboard/archivos", icon: FileText },
   { name: "Notas", href: "/dashboard/notas", icon: NotebookPen },
   { name: "WhatsApp", href: "/dashboard/whatsapp", icon: MessageSquare },
+  { name: "Campañas", href: "/dashboard/campanas", icon: Megaphone },
 ]
 
 const bottomNavigation = [

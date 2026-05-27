@@ -26,6 +26,14 @@ export interface ProductData {
     telefono?: string
     mensaje?: string
     estado?: string
+    plataforma?: string
+    plataforma_id?: string
+    fuente?: string
+    usuario_asignado?: number | null
+    asignado_a?: number | null
+    notas?: string
+    valor_estimado?: number | null
+    probabilidad_conversion?: number
   }
   
   export interface TaskData {

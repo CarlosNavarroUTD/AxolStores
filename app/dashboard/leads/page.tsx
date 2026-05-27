@@ -3,7 +3,7 @@
 import { useState } from "react"
 import useSWR from "swr"
 import { useTeam } from "@/contexts/team-context"
-import { leadsApi, type LeadData } from "@/lib/api"
+import { leadsApi, teamsApi, type LeadData } from "@/lib/api"
 import { Header } from "@/components/dashboard/header"
 import { DataTable, type Column } from "@/components/dashboard/data-table"
 import { Button } from "@/components/ui/button"
@@ -32,21 +32,38 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Plus, User } from "lucide-react"
 
+interface TeamMember {
+  id: number
+  user: {
+    id: number
+    username: string
+    first_name: string
+    last_name: string
+    email: string
+  }
+  role: string
+}
+
 interface Lead {
   id: number
   nombre: string
   email?: string
   telefono?: string
   mensaje?: string
+  notas?: string
   estado: string
+  estado_display?: string
   team: number
-  created_at?: string
+  asignado_a?: number
+  usuario_asignado?: number | null
+  usuario_asignado_nombre?: string | null
+  fecha_creacion?: string
 }
 
 const estadosLead = [
   { value: "nuevo", label: "Nuevo", variant: "default" as const },
   { value: "contactado", label: "Contactado", variant: "secondary" as const },
-  { value: "en_proceso", label: "En proceso", variant: "outline" as const },
+  { value: "en_seguimiento", label: "En seguimiento", variant: "outline" as const },
   { value: "convertido", label: "Convertido", variant: "default" as const },
   { value: "perdido", label: "Perdido", variant: "destructive" as const },
 ]
@@ -55,9 +72,10 @@ const emptyLead: Omit<Lead, "id"> = {
   nombre: "",
   email: "",
   telefono: "",
-  mensaje: "",
+  notas: "",
   estado: "nuevo",
   team: 0,
+  usuario_asignado: null,
 }
 
 export default function LeadsPage() {
@@ -73,6 +91,12 @@ export default function LeadsPage() {
     mutate,
     isLoading,
   } = useSWR(activeTeam ? `leads-${activeTeam.id}` : null, () => (activeTeam ? leadsApi.getAll(activeTeam.id) : []))
+
+  // Fetch team members for the assignment select
+  const { data: members = [] } = useSWR<TeamMember[]>(
+    activeTeam ? `members-${activeTeam.id}` : null,
+    () => (activeTeam ? teamsApi.getMembers(activeTeam.id) : [])
+  )
 
   const getEstadoBadge = (estado: string) => {
     const estadoInfo = estadosLead.find((e) => e.value === estado) || estadosLead[0]
@@ -106,11 +130,16 @@ export default function LeadsPage() {
       cell: (lead) => getEstadoBadge(lead.estado),
     },
     {
-      key: "created_at",
+      key: "usuario_asignado_nombre",
+      header: "Agente",
+      cell: (lead) => lead.usuario_asignado_nombre || <span className="text-muted-foreground text-sm">Sin asignar</span>,
+    },
+    {
+      key: "fecha_creacion",
       header: "Fecha",
       cell: (lead) =>
-        lead.created_at
-          ? new Date(lead.created_at).toLocaleDateString("es-ES", {
+        lead.fecha_creacion
+          ? new Date(lead.fecha_creacion).toLocaleDateString("es-ES", {
               day: "numeric",
               month: "short",
               year: "numeric",
@@ -126,9 +155,10 @@ export default function LeadsPage() {
         nombre: lead.nombre,
         email: lead.email || "",
         telefono: lead.telefono || "",
-        mensaje: lead.mensaje || "",
+        notas: lead.notas || "",
         estado: lead.estado,
         team: lead.team,
+        usuario_asignado: lead.usuario_asignado ?? null,
       })
     } else {
       setEditingLead(null)
@@ -145,6 +175,8 @@ export default function LeadsPage() {
       const data: LeadData = {
         ...formData,
         team: activeTeam.id,
+        asignado_a: activeTeam.id,
+        usuario_asignado: formData.usuario_asignado || null,
       }
 
       if (editingLead) {
@@ -269,28 +301,54 @@ export default function LeadsPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="estado">Estado</Label>
-              <Select value={formData.estado} onValueChange={(value) => setFormData({ ...formData, estado: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  {estadosLead.map((estado) => (
-                    <SelectItem key={estado.value} value={estado.value}>
-                      {estado.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="estado">Estado</Label>
+                <Select value={formData.estado} onValueChange={(value) => setFormData({ ...formData, estado: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona un estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {estadosLead.map((estado) => (
+                      <SelectItem key={estado.value} value={estado.value}>
+                        {estado.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="usuario_asignado">Agente asignado</Label>
+                <Select
+                  value={formData.usuario_asignado?.toString() || "none"}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, usuario_asignado: value === "none" ? null : parseInt(value) })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sin asignar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Sin asignar</SelectItem>
+                    {members.map((member) => (
+                      <SelectItem key={member.user.id} value={member.user.id.toString()}>
+                        {member.user.first_name
+                          ? `${member.user.first_name} ${member.user.last_name}`.trim()
+                          : member.user.username}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="mensaje">Mensaje</Label>
+              <Label htmlFor="notas">Notas</Label>
               <Textarea
-                id="mensaje"
-                value={formData.mensaje}
-                onChange={(e) => setFormData({ ...formData, mensaje: e.target.value })}
+                id="notas"
+                value={formData.notas}
+                onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
                 placeholder="Notas o mensaje del lead..."
                 rows={3}
               />

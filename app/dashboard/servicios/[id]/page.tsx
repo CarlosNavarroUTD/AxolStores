@@ -23,7 +23,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { ArrowLeft, Trash2, Upload, X } from "lucide-react"  // ← Upload y X agregados
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { ArrowLeft, Trash2, Upload, X, Copy } from "lucide-react"  // ← Upload y X agregados
 
 interface FormData {
   nombre: string
@@ -59,6 +74,11 @@ export default function ServicioFormPage() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(searchParams.get("delete") === "1")
   const [newKey, setNewKey] = useState("")
   const [newValue, setNewValue] = useState("")
+
+  const { teams } = useTeam()
+  const [isCopyOpen, setIsCopyOpen] = useState(false)
+  const [selectedTeamToCopy, setSelectedTeamToCopy] = useState<string>("")
+  const otherTeams = teams.filter((t) => t.id !== activeTeam?.id)
 
   // ← nuevos estados para la imagen
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -156,6 +176,27 @@ export default function ServicioFormPage() {
     }
   }
 
+  const handleCopy = async () => {
+    if (!selectedTeamToCopy || !service) return
+    setIsSubmitting(true)
+    try {
+      const data: ServiceData & { personalizados?: Record<string, unknown> } = {
+        ...formData,
+        nombre: `${formData.nombre} (Copia)`,
+        team: Number(selectedTeamToCopy),
+      }
+      await servicesApi.create(data)
+      toast.success("Servicio copiado exitosamente")
+      setIsCopyOpen(false)
+      setSelectedTeamToCopy("")
+    } catch (error: any) {
+      console.error("Error copiando servicio:", error)
+      toast.error("Error al copiar el servicio", { description: error.message })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   const addPersonalizado = () => {
     if (!newKey.trim()) return
     setFormData((prev) => ({
@@ -203,15 +244,26 @@ export default function ServicioFormPage() {
             Volver
           </Button>
           {!isNew && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsDeleteOpen(true)}
-              className="gap-2 text-destructive hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-              Eliminar
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsCopyOpen(true)}
+                className="gap-2"
+              >
+                <Copy className="h-4 w-4" />
+                Copiar a otro equipo
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsDeleteOpen(true)}
+                className="gap-2 text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+                Eliminar
+              </Button>
+            </div>
           )}
         </div>
 
@@ -412,6 +464,52 @@ export default function ServicioFormPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={isCopyOpen} onOpenChange={setIsCopyOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Copiar en otro equipo</DialogTitle>
+            <DialogDescription>
+              Selecciona el equipo al que deseas copiar el servicio &quot;{service?.nombre}&quot;.
+              Se creará una copia idéntica (incluyendo imagen y campos).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="team-select" className="mb-2 block">
+              Equipo destino
+            </Label>
+            {otherTeams.length > 0 ? (
+              <Select value={selectedTeamToCopy} onValueChange={setSelectedTeamToCopy}>
+                <SelectTrigger id="team-select" className="w-full">
+                  <SelectValue placeholder="Selecciona un equipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {otherTeams.map((team) => (
+                    <SelectItem key={team.id} value={team.id.toString()}>
+                      {team.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                No perteneces a ningún otro equipo.
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCopyOpen(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleCopy} 
+              disabled={isSubmitting || !selectedTeamToCopy || otherTeams.length === 0}
+            >
+              {isSubmitting ? "Copiando..." : "Copiar servicio"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
