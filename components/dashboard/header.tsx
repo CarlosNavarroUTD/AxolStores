@@ -17,19 +17,36 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Sun, Moon, Bell, Menu, User, LogOut, Search } from "lucide-react"
 
 import { useState } from "react"
+import { usePathname } from "next/navigation"
 import useSWR from "swr"
 import { teamsApi } from "@/lib/api"
 
+const pageTitles: Record<string, string> = {
+  "/dashboard": "Dashboard",
+  "/dashboard/productos": "Productos",
+  "/dashboard/servicios": "Servicios",
+  "/dashboard/leads": "Leads",
+  "/dashboard/tareas": "Tareas",
+  "/dashboard/archivos": "Archivos",
+  "/dashboard/notas": "Notas",
+  "/dashboard/whatsapp": "WhatsApp",
+  "/dashboard/campanas": "Campañas",
+  "/dashboard/equipo": "Mi equipo",
+  "/dashboard/configuracion": "Configuración",
+  "/dashboard/migraciones": "Migraciones",
+}
+
 export interface HeaderProps {
-  title?: string
   onMenuClick?: () => void
 }
 
-export function Header({ title, onMenuClick }: HeaderProps) {
+export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout } = useAuth()
   const { activeTeam, refreshTeams } = useTeam()
   const { theme, toggleTheme } = useTheme()
   const [isProcessing, setIsProcessing] = useState(false)
+  const pathname = usePathname()
+  const pageTitle = pageTitles[pathname] || "Dashboard"
 
   const { data: invitations = [], mutate: mutateInvitations } = useSWR(
     user ? "my-invitations" : null,
@@ -73,7 +90,7 @@ export function Header({ title, onMenuClick }: HeaderProps) {
             <span className="sr-only">Toggle menu</span>
           </Button>
         )}
-        <h1 className="text-lg font-semibold">{title || activeTeam?.name || "Dashboard"}</h1>
+        <h1 className="text-lg font-semibold">{activeTeam?.name || "Dashboard"}<span className="text-muted-foreground font-normal"> - {pageTitle}</span></h1>
       </div>
 
       <div className="flex items-center gap-2 lg:gap-4">

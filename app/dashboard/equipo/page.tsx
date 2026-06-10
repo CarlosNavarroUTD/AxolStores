@@ -4,7 +4,7 @@ import { useState } from "react"
 import useSWR from "swr"
 import { useTeam } from "@/contexts/team-context"
 import { teamsApi } from "@/lib/api"
-import { Header } from "@/components/dashboard/header"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -59,7 +59,6 @@ export default function EquipoPage() {
   if (!activeTeam) {
     return (
       <div className="flex h-full flex-col">
-        <Header title="Mi equipo" />
         <div className="flex-1 flex items-center justify-center">
           <p className="text-muted-foreground">Selecciona una tienda para ver el equipo</p>
         </div>
@@ -69,7 +68,6 @@ export default function EquipoPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <Header title="Mi equipo" />
 
       <div className="flex-1 space-y-4 p-4 lg:p-6">
         <div className="flex items-center justify-between">

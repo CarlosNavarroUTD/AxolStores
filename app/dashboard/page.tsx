@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useTeam } from "@/contexts/team-context"
-import { Header } from "@/components/dashboard/header"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Package, Wrench, Users, ClipboardList, TrendingUp, DollarSign } from "lucide-react"
 import Link from "next/link"
@@ -120,7 +120,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col">
-      <Header title="Dashboard" />
+
 
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Estadísticas */}

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { useTeam } from "@/contexts/team-context"
 import { whatsappApi } from "@/lib/api"
 import type { WhatsappInstance, QrCodeResponse } from "@/lib/api/whatsapp"
-import { Header } from "@/components/dashboard/header"
+
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -155,7 +155,6 @@ export default function WhatsappPage() {
   if (!activeTeam) {
     return (
       <div className="flex h-full flex-col">
-        <Header title="WhatsApp" />
         <div className="flex-1 flex items-center justify-center">
           <p className="text-muted-foreground">Selecciona un equipo para gestionar tus cuentas de WhatsApp</p>
         </div>
@@ -165,7 +164,6 @@ export default function WhatsappPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <Header title="WhatsApp" />
 
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         {/* Header */}

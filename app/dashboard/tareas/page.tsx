@@ -4,7 +4,7 @@ import { useState } from "react"
 import useSWR from "swr"
 import { useTeam } from "@/contexts/team-context"
 import { tasksApi, type TaskData } from "@/lib/api"
-import { Header } from "@/components/dashboard/header"
+
 import { DataTable, type Column } from "@/components/dashboard/data-table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -180,7 +180,6 @@ export default function TareasPage() {
   if (!activeTeam) {
     return (
       <div className="flex h-full flex-col">
-        <Header title="Tareas" />
         <div className="flex-1 flex items-center justify-center">
           <p className="text-muted-foreground">Selecciona una tienda para ver las tareas</p>
         </div>
@@ -190,7 +189,6 @@ export default function TareasPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <Header title="Tareas" />
 
       <div className="flex-1 space-y-4 p-4 lg:p-6">
         <div className="flex items-center justify-between">

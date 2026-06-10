@@ -6,7 +6,7 @@ import { useTeam } from "@/contexts/team-context"
 import { campaignsApi, leadsApi, whatsappApi } from "@/lib/api"
 import type { Plantilla, Campana, PlantillaData, CampanaCreateData } from "@/lib/api"
 import type { WhatsappInstance } from "@/lib/api/whatsapp"
-import { Header } from "@/components/dashboard/header"
+
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -415,7 +415,6 @@ export default function CampanasPage() {
   if (!activeTeam) {
     return (
       <div className="flex h-full flex-col">
-        <Header title="Campañas" />
         <div className="flex-1 flex items-center justify-center">
           <p className="text-muted-foreground">Selecciona una tienda para gestionar campañas</p>
         </div>
@@ -425,7 +424,6 @@ export default function CampanasPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <Header title="Campañas" />
       <div className="flex-1 space-y-4 p-4 lg:p-6">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Campañas</h2>

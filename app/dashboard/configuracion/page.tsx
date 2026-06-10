@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useTeam } from "@/contexts/team-context"
 import { teamsApi } from "@/lib/api"
-import { Header } from "@/components/dashboard/header"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -63,7 +63,6 @@ export default function ConfiguracionPage() {
   if (!activeTeam) {
     return (
       <div className="flex h-full flex-col">
-        <Header title="Configuración" />
         <div className="flex-1 flex items-center justify-center">
           <p className="text-muted-foreground">Selecciona una tienda para ver la configuración</p>
         </div>
@@ -73,7 +72,6 @@ export default function ConfiguracionPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <Header title="Configuración" />
 
       <div className="flex-1 space-y-6 p-4 lg:p-6">
         <div>

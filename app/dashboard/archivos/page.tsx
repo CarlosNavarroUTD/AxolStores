@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { useTeam } from "@/contexts/team-context"
-import { Header } from "@/components/dashboard/header"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -273,7 +273,6 @@ export default function ArchivosPage() {
   if (!activeTeam) {
     return (
       <div className="flex h-full flex-col">
-        <Header title="Archivos" />
         <div className="flex-1 flex items-center justify-center">
           <p className="text-muted-foreground">Selecciona una tienda para ver los archivos</p>
         </div>
@@ -283,7 +282,6 @@ export default function ArchivosPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <Header title="Archivos" />
 
       <div className="flex-1 overflow-auto p-6 space-y-6">
         {/* Estadísticas */}
