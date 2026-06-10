@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import useSWR from "swr"
 import { productsApi } from "@/lib/api"
 import { useTeam } from "@/contexts/team-context"
-import { Header } from "@/components/dashboard/header"
+
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -218,7 +218,7 @@ export default function ProductDetailPage() {
   if (isLoading) {
     return (
       <div className="flex h-full flex-col">
-        <Header title="Cargando..." />
+
         <div className="flex-1 flex items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
@@ -229,7 +229,7 @@ export default function ProductDetailPage() {
   if (error || !product) {
     return (
       <div className="flex h-full flex-col">
-        <Header title="Producto no encontrado" />
+
         <div className="flex-1 flex flex-col items-center justify-center gap-4">
           <Package className="h-12 w-12 text-muted-foreground" />
           <p className="text-muted-foreground">
@@ -253,7 +253,7 @@ export default function ProductDetailPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <Header title={product.nombre} />
+
 
       <div className="flex-1 p-4 lg:p-6 space-y-6 overflow-y-auto">
         {/* Breadcrumb y acciones */}
@@ -372,8 +372,8 @@ export default function ProductDetailPage() {
           {/* Información del producto */}
           <div className="space-y-6">
             <Card>
-              <CardHeader>
-                <div className="flex items-start justify-between">
+              <CardContent className="space-y-6">
+                <div className="flex items-start justify-between mt-6">
                   <div className="flex-1 mr-4">
                     <CardTitle className="text-2xl">
                       <InlineEditable 
@@ -388,8 +388,6 @@ export default function ProductDetailPage() {
                     {product.activo ? "Activo" : "Inactivo"}
                   </Badge>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
                 {/* Precio y stock */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">

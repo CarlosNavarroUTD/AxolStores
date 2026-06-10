@@ -6,7 +6,7 @@ import useSWR from "swr"
 import { useTeam } from "@/contexts/team-context"
 import { servicesApi, type ServiceData } from "@/lib/api"
 import { archivosApi, validarTamanoArchivo, detectarTipoArchivo } from "@/lib/api/archivos"  // ← nuevo
-import { Header } from "@/components/dashboard/header"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -225,7 +225,7 @@ export default function ServicioFormPage() {
   if (isLoading) {
     return (
       <div className="flex h-full flex-col">
-        <Header title="Servicio" />
+
         <div className="flex-1 flex items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
@@ -235,7 +235,7 @@ export default function ServicioFormPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <Header title={isNew ? "Nuevo servicio" : "Editar servicio"} />
+
 
       <div className="flex-1 p-4 lg:p-6 max-w-2xl mx-auto w-full space-y-6">
         <div className="flex items-center justify-between">
