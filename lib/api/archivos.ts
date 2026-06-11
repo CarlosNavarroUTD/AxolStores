@@ -349,8 +349,12 @@ const archivo_url = `https://r2.eabmodel.com/${key.split("/").map(encodeURICompo
   /**
    * Obtener estadísticas de archivos
    */
-  async estadisticas(): Promise<EstadisticasArchivos> {
-    return await fetchWithAuth("/archivos/estadisticas/")
+  async estadisticas(teamId?: string): Promise<EstadisticasArchivos> {
+    const params = new URLSearchParams()
+    if (teamId) params.append("team_id", teamId)
+    
+    const url = `/archivos/estadisticas/${params.toString() ? `?${params}` : ""}`
+    return await fetchWithAuth(url)
   },
 }
 

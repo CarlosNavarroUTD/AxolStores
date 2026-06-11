@@ -78,8 +78,9 @@ export default function ArchivosPage() {
 
   // Cargar estadísticas
   const cargarEstadisticas = async () => {
+    if (!activeTeam) return
     try {
-      const data = await archivosApi.estadisticas()
+      const data = await archivosApi.estadisticas(activeTeam.id.toString())
       setStats(data)
     } catch (error) {
       console.error("Error al cargar estadísticas:", error)
@@ -227,7 +228,8 @@ export default function ArchivosPage() {
     try {
       await archivosApi.delete(id)
       toast.success("Archivo eliminado", { description: nombre })
-      cargarArchivos()
+      // Eliminar del estado inmediatamente sin recargar la lista
+      setArchivos(prev => prev.filter(archivo => archivo.id !== id))
       cargarEstadisticas()
     } catch (error: any) {
       toast.error("Error", { description: error.message })
