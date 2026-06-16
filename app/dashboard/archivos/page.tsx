@@ -20,7 +20,9 @@ import {
   History,
   Shield,
   MoreVertical,
-  Eye
+  Eye,
+  Copy,
+  Check
 } from "lucide-react"
 
 // ✅ IMPORTAR TIPOS Y FUNCIONES CORRECTAS DE LA API
@@ -53,6 +55,7 @@ export default function ArchivosPage() {
   const [busqueda, setBusqueda] = useState("")
   const [tipoFiltro, setTipoFiltro] = useState("")
   const [dragging, setDragging] = useState(false)
+  const [copiadoId, setCopiadoId] = useState<string | null>(null)
 
   // Estado para el diálogo de historial
   const [historialDialog, setHistorialDialog] = useState({
@@ -421,12 +424,36 @@ export default function ArchivosPage() {
                         </div>
                       </div>
 
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="relative group transition-all duration-300 active:scale-95"
+                          onClick={() => {
+                            navigator.clipboard.writeText(archivo.archivo_url)
+                            setCopiadoId(archivo.id)
+                            toast.success("URL copiada al portapapeles")
+                            setTimeout(() => setCopiadoId(null), 2000)
+                          }}
+                          title="Copiar URL"
+                        >
+                          {copiadoId === archivo.id ? (
+                            <Check className="h-4 w-4 text-green-500 animate-in zoom-in" />
+                          ) : (
+                            <Copy className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                          )}
+                          {copiadoId === archivo.id && (
+                            <span className="absolute -top-8 bg-black text-white text-[10px] px-2 py-1 rounded shadow-lg animate-in fade-in slide-in-from-bottom-2 whitespace-nowrap">
+                              Copiado al portapapeles
+                            </span>
+                          )}
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
                             onClick={() => handleDescargar(archivo.id, archivo.nombre)}
@@ -456,6 +483,7 @@ export default function ArchivosPage() {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
+                  </div>
                   )
                 })}
               </div>
