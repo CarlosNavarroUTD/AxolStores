@@ -278,7 +278,7 @@ export default function UsuariosPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {featuresList.map((feature) => {
                 const config = selectedUser?.features_config || defaultFeatures
-                const isChecked = config[feature.key] ?? defaultFeatures[feature.key as keyof typeof defaultFeatures]
+                const isChecked = (config as Record<string, boolean>)[feature.key] ?? defaultFeatures[feature.key as keyof typeof defaultFeatures]
                 const Icon = feature.icon
 
                 return (
