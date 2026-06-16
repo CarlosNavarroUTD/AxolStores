@@ -10,6 +10,8 @@ interface User {
   email: string
   tipo_usuario: string
   phone?: string
+  is_staff?: boolean
+  features_config?: Record<string, boolean>
   persona?: {
     id_persona: number
     nombre: string

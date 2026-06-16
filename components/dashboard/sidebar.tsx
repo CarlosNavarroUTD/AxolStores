@@ -25,18 +25,26 @@ import {
   MessageSquare,
   Database,
   Megaphone,
+  UserCog,
 } from "lucide-react"
 
-const navigation = [
+interface NavigationItem {
+  name: string
+  href: string
+  icon: any
+  feature?: string
+}
+
+const navigation: NavigationItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Productos", href: "/dashboard/productos", icon: Package },
-  { name: "Servicios", href: "/dashboard/servicios", icon: Wrench },
-  { name: "Leads", href: "/dashboard/leads", icon: Users },
-  { name: "Tareas", href: "/dashboard/tareas", icon: ClipboardList },
-  { name: "Archivos", href: "/dashboard/archivos", icon: FileText },
-  { name: "Notas", href: "/dashboard/notas", icon: NotebookPen },
-  { name: "WhatsApp", href: "/dashboard/whatsapp", icon: MessageSquare },
-  { name: "Campañas", href: "/dashboard/campanas", icon: Megaphone },
+  { name: "Productos", href: "/dashboard/productos", icon: Package, feature: "productos" },
+  { name: "Servicios", href: "/dashboard/servicios", icon: Wrench, feature: "servicios" },
+  { name: "Leads", href: "/dashboard/leads", icon: Users, feature: "leads" },
+  { name: "Tareas", href: "/dashboard/tareas", icon: ClipboardList, feature: "tareas" },
+  { name: "Archivos", href: "/dashboard/archivos", icon: FileText, feature: "archivos" },
+  { name: "Notas", href: "/dashboard/notas", icon: NotebookPen, feature: "notas" },
+  { name: "WhatsApp", href: "/dashboard/whatsapp", icon: MessageSquare, feature: "whatsapp" },
+  { name: "Campañas", href: "/dashboard/campanas", icon: Megaphone, feature: "campanas" },
 ]
 
 const bottomNavigation = [
@@ -50,6 +58,20 @@ export function Sidebar() {
   const { user, logout } = useAuth()
   const { activeTeam } = useTeam()
 
+  // Si es staff, ve todo. Si no, filtra por features_config
+  const visibleNavigation = navigation.filter((item) => {
+    if (!item.feature) return true
+    if (user?.is_staff) return true
+    return user?.features_config?.[item.feature] === true
+  })
+
+  const visibleBottomNavigation = [
+    ...bottomNavigation,
+    ...(user?.is_staff
+      ? [{ name: "Usuarios", href: "/dashboard/usuarios", icon: UserCog }]
+      : []),
+  ]
+
   return (
     <div className="flex h-full w-64 flex-col border-r bg-sidebar text-sidebar-foreground">
       {/* Header con Team Switcher */}
@@ -62,7 +84,7 @@ export function Sidebar() {
       {/* Navegación principal */}
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="space-y-1">
-          {navigation.map((item) => {
+          {visibleNavigation.map((item) => {
             const isActive = pathname === item.href
             return (
               <Link
@@ -102,7 +124,7 @@ export function Sidebar() {
       {/* Navegación inferior */}
       <div className="border-t p-3">
         <nav className="space-y-1">
-          {bottomNavigation.map((item) => {
+          {visibleBottomNavigation.map((item) => {
             const isActive = pathname === item.href
             return (
               <Link

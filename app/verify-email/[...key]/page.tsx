@@ -10,7 +10,11 @@ import { CheckCircle2, XCircle, Loader2 } from "lucide-react"
 export default function VerifyEmailPage() {
   const params = useParams()
   const router = useRouter()
-  const key = params.key as string
+
+  // catch-all routes devuelven un array; lo unimos para reconstruir el token completo
+  // ej: ["Mg:1wZMwm:Q-zHMakyl..."] o ["Mg", "1wZMwm", "Q-zHMakyl..."] según el token
+  const keyParts = params.key as string | string[]
+  const key = Array.isArray(keyParts) ? keyParts.join("/") : keyParts
 
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading")
   const [errorMessage, setErrorMessage] = useState("")
@@ -28,7 +32,7 @@ export default function VerifyEmailPage() {
         setStatus("success")
       } catch (err: any) {
         setStatus("error")
-        setErrorMessage(err.message || "Error al verificar el correo.")
+        setErrorMessage(err.message || "El enlace de verificación es inválido o ya fue utilizado.")
       }
     }
 

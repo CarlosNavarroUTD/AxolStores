@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useTeam } from "@/contexts/team-context"
+import { useAuth } from "@/contexts/auth-context"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Package, Wrench, Users, ClipboardList, TrendingUp, DollarSign } from "lucide-react"
@@ -16,6 +17,7 @@ interface DashboardStats {
 
 export default function DashboardPage() {
   const { activeTeam, isLoading } = useTeam()
+  const { user } = useAuth()
   const [stats, setStats] = useState<DashboardStats>({
     productos: 0,
     servicios: 0,
@@ -97,26 +99,33 @@ export default function DashboardPage() {
       value: loadingStats ? "..." : stats.productos.toString(),
       icon: Package,
       href: "/dashboard/productos",
+      feature: "productos",
     },
     {
       name: "Servicios",
       value: loadingStats ? "..." : stats.servicios.toString(),
       icon: Wrench,
       href: "/dashboard/servicios",
+      feature: "servicios",
     },
     {
       name: "Leads",
       value: loadingStats ? "..." : stats.leads.toString(),
       icon: Users,
       href: "/dashboard/leads",
+      feature: "leads",
     },
     {
       name: "Tareas",
       value: loadingStats ? "..." : stats.tareas.toString(),
       icon: ClipboardList,
       href: "/dashboard/tareas",
+      feature: "tareas",
     },
-  ]
+  ].filter((card) => {
+    if (user?.is_staff) return true
+    return user?.features_config?.[card.feature] === true
+  })
 
   return (
     <div className="flex flex-col">

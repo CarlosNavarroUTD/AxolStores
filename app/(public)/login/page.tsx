@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useEffect, Suspense } from "react"
 import { useAuth, AuthProvider } from "@/contexts/auth-context"
+import { authApi } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -78,6 +79,9 @@ function LoginForm() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [needsVerification, setNeedsVerification] = useState(false)
+  const [resendLoading, setResendLoading] = useState(false)
+  const [resendSent, setResendSent] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const { login } = useAuth()
@@ -91,14 +95,43 @@ function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    setNeedsVerification(false)
     setIsLoading(true)
 
     try {
       await login(email, password)
     } catch (err: any) {
-      setError(err.message || "Credenciales inválidas. Por favor intenta de nuevo.")
+      const msg: string = err.message || ""
+      // dj-rest-auth devuelve este mensaje cuando el email no está verificado
+      if (
+        msg.toLowerCase().includes("e-mail is not verified") ||
+        msg.toLowerCase().includes("verific") ||
+        msg.toLowerCase().includes("verified")
+      ) {
+        setNeedsVerification(true)
+        setError("Tu correo aún no está verificado. Revisa tu bandeja de entrada o reenvía el correo.")
+      } else {
+        setError(msg || "Credenciales inválidas. Por favor intenta de nuevo.")
+      }
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleResend = async () => {
+    if (!email) {
+      setError("Ingresa tu correo para reenviar la verificación.")
+      return
+    }
+    setResendLoading(true)
+    try {
+      await authApi.resendVerification(email)
+      setResendSent(true)
+      setError("")
+    } catch (err: any) {
+      setError(err.message || "No se pudo reenviar el correo.")
+    } finally {
+      setResendLoading(false)
     }
   }
 
@@ -118,6 +151,13 @@ function LoginForm() {
           <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
             <AlertDescription>
               ¡Registro exitoso! Por favor revisa tu correo y verifica tu cuenta antes de iniciar sesión.
+            </AlertDescription>
+          </Alert>
+        )}
+        {resendSent && (
+          <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
+            <AlertDescription>
+              ✅ Correo de verificación reenviado. Revisa tu bandeja de entrada.
             </AlertDescription>
           </Alert>
         )}
@@ -152,6 +192,17 @@ function LoginForm() {
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
           </Button>
+          {needsVerification && !resendSent && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleResend}
+              disabled={resendLoading}
+            >
+              {resendLoading ? "Reenviando..." : "Reenviar correo de verificación"}
+            </Button>
+          )}
         </form>
 
         <div className="mt-4 flex items-center justify-between">
@@ -174,6 +225,7 @@ function LoginForm() {
     </Card>
   )
 }
+
 
 export default function LoginPage() {
   const GOOGLE_CLIENT_ID = "1082793650997-9is93tksdvi8iffgieasco8918dpmm1o.apps.googleusercontent.com"

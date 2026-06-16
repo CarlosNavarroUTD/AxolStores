@@ -1,5 +1,6 @@
 export { authApi } from "./auth"
 export { teamsApi } from "./teams"
+export { usersApi } from "./users"
 export { productsApi } from "./products"
 export { servicesApi } from "./services"
 export { leadsApi } from "./leads"

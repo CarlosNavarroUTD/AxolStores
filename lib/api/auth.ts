@@ -37,9 +37,24 @@ export const authApi = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ key }),
     })
-    if (!response.ok) throw new Error("Error al verificar el correo electrónico.")
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}))
+      const detail = err.detail || err.key?.[0] || JSON.stringify(err)
+      throw new Error(detail || "Error al verificar el correo electrónico.")
+    }
     return response.json()
   },
+
+  resendVerification: async (email: string) => {
+    const response = await fetch(`${API_BASE_URL}/auth/registration/resend-email/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    })
+    if (!response.ok) throw new Error("No se pudo reenviar el correo de verificación.")
+    return response.json()
+  },
+
 
 
   googleLogin: async (code: string) => {
