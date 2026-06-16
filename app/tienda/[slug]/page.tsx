@@ -6,7 +6,8 @@ import { ServicesSection } from "@/components/store/services-section"
 import { ContactSection } from "@/components/store/contact-section"
 import { StoreFooter } from "@/components/store/store-footer"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+const RAW_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+const API_BASE_URL = RAW_URL.endsWith("/api") ? RAW_URL : `${RAW_URL}/api`
 
 async function getTeam(slug: string) {
   const url = `${API_BASE_URL}/teams/public/?slug=${slug}`

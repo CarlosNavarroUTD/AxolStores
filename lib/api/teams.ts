@@ -14,7 +14,7 @@ export const teamsApi = {
   createTeam: (data: { name: string; description?: string }) =>
     fetchWithAuth("/teams/", { method: "POST", body: JSON.stringify(data) }),
 
-  updateTeam: (id: number, data: Partial<{ name: string; description: string }>) =>
+  updateTeam: (id: number, data: Partial<{ name: string; slug: string; description: string }>) =>
     fetchWithAuth(`/teams/${id}/`, { method: "PATCH", body: JSON.stringify(data) }),
 
   deleteTeam: (id: number) =>
